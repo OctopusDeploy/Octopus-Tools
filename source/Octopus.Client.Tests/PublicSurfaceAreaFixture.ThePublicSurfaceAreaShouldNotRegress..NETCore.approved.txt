@@ -2727,7 +2727,6 @@ Octopus.Client.Model
     List<DashboardEnvironmentResource> Environments { get; set; }
     Boolean IsFiltered { get; set; }
     List<DashboardItemResource> Items { get; set; }
-    List<DashboardItemResource> PreviousItems { get; set; }
     List<DashboardProjectGroupResource> ProjectGroups { get; set; }
     Nullable<Int32> ProjectLimit { get; set; }
     List<DashboardProjectResource> Projects { get; set; }

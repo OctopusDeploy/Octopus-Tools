@@ -10,7 +10,6 @@ namespace Octopus.Client.Model
         public List<DashboardEnvironmentResource> Environments { get; set; }
         public List<DashboardTenantResource> Tenants { get; set; }
         public List<DashboardItemResource> Items { get; set; }
-        public List<DashboardItemResource> PreviousItems { get; set; }
         public int? ProjectLimit { get; set; }
         public bool IsFiltered { get; set; }
     }
