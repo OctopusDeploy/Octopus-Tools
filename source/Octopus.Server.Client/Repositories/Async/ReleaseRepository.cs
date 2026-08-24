@@ -51,7 +51,22 @@ namespace Octopus.Client.Repositories.Async
         [Obsolete("Please use the overload with cancellation token instead.", false)]
         Task<ReleaseResource> SnapshotVariables(ReleaseResource release);
         Task<ReleaseResource> SnapshotVariables(ReleaseResource release, CancellationToken cancellationToken);
+        /// <param name="release">release to have its snapshot updated</param>
+        /// <param name="variableSnapshotConcurrencyToken">
+        /// The VariableSnapshotConcurrencyToken read from the release. When supplied, the update fails with a
+        /// conflict if the release's variable snapshots have changed since. Omit to skip the check.
+        /// </param>
+        /// <param name="cancellationToken">Request cancellation token</param>
+        Task<ReleaseResource> SnapshotVariables(ReleaseResource release, string variableSnapshotConcurrencyToken, CancellationToken cancellationToken);
         Task<ReleaseResource> SnapshotVariablesByName(ReleaseResource release, VariableIdentifier[] variables, CancellationToken cancellationToken);
+        /// <param name="release">release to have its snapshot updated</param>
+        /// <param name="variables">identifiers for Variables to be updated</param>
+        /// <param name="variableSnapshotConcurrencyToken">
+        /// The VariableSnapshotConcurrencyToken read from the release. When supplied, the update fails with a
+        /// conflict if the release's variable snapshots have changed since. Omit to skip the check.
+        /// </param>
+        /// <param name="cancellationToken">Request cancellation token</param>
+        Task<ReleaseResource> SnapshotVariablesByName(ReleaseResource release, VariableIdentifier[] variables, string variableSnapshotConcurrencyToken, CancellationToken cancellationToken);
 
         [Obsolete("Please use the overload with cancellation token instead.", false)]
         Task<ReleaseResource> Create(ReleaseResource release, bool ignoreChannelRules = false);
@@ -132,12 +147,28 @@ namespace Octopus.Client.Repositories.Async
             return await Get(release.Id).ConfigureAwait(false);
         }
 
+        public async Task<ReleaseResource> SnapshotVariables(ReleaseResource release, string variableSnapshotConcurrencyToken, CancellationToken cancellationToken)
+        {
+            await Client.Post(release.Link("SnapshotVariables"), new { VariableSnapshotConcurrencyToken = variableSnapshotConcurrencyToken }, cancellationToken).ConfigureAwait(false);
+            return await Get(release.Id).ConfigureAwait(false);
+        }
+
         public async Task<ReleaseResource> SnapshotVariablesByName(ReleaseResource release, VariableIdentifier[] variables, CancellationToken cancellationToken)
         {
             const string route = "~/api/{spaceId}/releases/{releaseId}/snapshot-variables-by-name";
             return await Client.Post<object, ReleaseResource>(
             route,
             new { Variables = variables },
+            new { spaceId = release.SpaceId, releaseId = release.Id },
+            cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<ReleaseResource> SnapshotVariablesByName(ReleaseResource release, VariableIdentifier[] variables, string variableSnapshotConcurrencyToken, CancellationToken cancellationToken)
+        {
+            const string route = "~/api/{spaceId}/releases/{releaseId}/snapshot-variables-by-name";
+            return await Client.Post<object, ReleaseResource>(
+            route,
+            new { Variables = variables, VariableSnapshotConcurrencyToken = variableSnapshotConcurrencyToken },
             new { spaceId = release.SpaceId, releaseId = release.Id },
             cancellationToken).ConfigureAwait(false);
         }

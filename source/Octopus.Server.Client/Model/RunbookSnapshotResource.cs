@@ -52,6 +52,11 @@ namespace Octopus.Client.Model
 
         public string ProjectVariableSetSnapshotId { get; set; }
 
+        /// <summary>
+        /// Identifies the runbook snapshot's current variable snapshots.
+        /// </summary>
+        public string VariableSnapshotConcurrencyToken { get; set; }
+
         public string SpaceId { get; set; }
     }
 }

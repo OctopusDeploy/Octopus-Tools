@@ -51,6 +51,11 @@ namespace Octopus.Client.Model
 
         public string ProjectVariableSetSnapshotId { get; set; }
 
+        /// <summary>
+        /// Identifies the release's current variable snapshots.
+        /// </summary>
+        public string VariableSnapshotConcurrencyToken { get; set; }
+
         [Writeable]
         [NotReadable]
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

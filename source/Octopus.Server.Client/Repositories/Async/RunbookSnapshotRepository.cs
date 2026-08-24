@@ -26,7 +26,22 @@ namespace Octopus.Client.Repositories.Async
         Task<RunbookRunTemplateResource> GetTemplate(RunbookSnapshotResource runbookSnapshot);
         Task<RunbookRunPreviewResource> GetPreview(DeploymentPromotionTarget promotionTarget);
         Task<RunbookSnapshotResource> SnapshotVariables(RunbookSnapshotResource runbookSnapshot);
+        /// <param name="runbookSnapshot"></param>
+        /// <param name="variableSnapshotConcurrencyToken">
+        /// The VariableSnapshotConcurrencyToken read from the runbook snapshot. When supplied, the update fails with a
+        /// conflict if the snapshot's variable snapshots have changed since. Omit to skip the check.
+        /// </param>
+        /// <param name="cancellationToken">Request cancellation token</param>
+        Task<RunbookSnapshotResource> SnapshotVariables(RunbookSnapshotResource runbookSnapshot, string variableSnapshotConcurrencyToken, CancellationToken cancellationToken);
         Task<RunbookSnapshotResource> SnapshotVariablesByName(RunbookSnapshotResource runbookSnapshot, VariableIdentifier[] variables, CancellationToken cancellationToken);
+        /// <param name="runbookSnapshot"></param>
+        /// <param name="variables"></param>
+        /// <param name="variableSnapshotConcurrencyToken">
+        /// The VariableSnapshotConcurrencyToken read from the runbook snapshot. When supplied, the update fails with a
+        /// conflict if the snapshot's variable snapshots have changed since. Omit to skip the check.
+        /// </param>
+        /// <param name="cancellationToken">Request cancellation token</param>
+        Task<RunbookSnapshotResource> SnapshotVariablesByName(RunbookSnapshotResource runbookSnapshot, VariableIdentifier[] variables, string variableSnapshotConcurrencyToken, CancellationToken cancellationToken);
         Task<RunbookSnapshotResource> Create(RunbookSnapshotResource runbookSnapshot);
     }
 
@@ -63,12 +78,29 @@ namespace Octopus.Client.Repositories.Async
             return await Get(runbookSnapshot.Id).ConfigureAwait(false);
         }
 
+        public async Task<RunbookSnapshotResource> SnapshotVariables(RunbookSnapshotResource runbookSnapshot, string variableSnapshotConcurrencyToken, CancellationToken cancellationToken)
+        {
+            await Client.Post(runbookSnapshot.Link("SnapshotVariables"), new { VariableSnapshotConcurrencyToken = variableSnapshotConcurrencyToken }, cancellationToken).ConfigureAwait(false);
+            return await Get(runbookSnapshot.Id).ConfigureAwait(false);
+        }
+
         public async Task<RunbookSnapshotResource> SnapshotVariablesByName(RunbookSnapshotResource runbookSnapshot, VariableIdentifier[] variables, CancellationToken cancellationToken)
         {
             const string route = "~/api/{spaceId}/runbookSnapshots/{runbookSnapshotId}/snapshot-variables-by-name";
             return await Client.Post<object, RunbookSnapshotResource>(
                 route,
                 new { Variables = variables },
+                new { spaceId = runbookSnapshot.SpaceId, runbookSnapshotId = runbookSnapshot.Id },
+                cancellationToken
+                ).ConfigureAwait(false);
+        }
+
+        public async Task<RunbookSnapshotResource> SnapshotVariablesByName(RunbookSnapshotResource runbookSnapshot, VariableIdentifier[] variables, string variableSnapshotConcurrencyToken, CancellationToken cancellationToken)
+        {
+            const string route = "~/api/{spaceId}/runbookSnapshots/{runbookSnapshotId}/snapshot-variables-by-name";
+            return await Client.Post<object, RunbookSnapshotResource>(
+                route,
+                new { Variables = variables, VariableSnapshotConcurrencyToken = variableSnapshotConcurrencyToken },
                 new { spaceId = runbookSnapshot.SpaceId, runbookSnapshotId = runbookSnapshot.Id },
                 cancellationToken
                 ).ConfigureAwait(false);

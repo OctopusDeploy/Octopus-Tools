@@ -5143,6 +5143,7 @@ Octopus.Client.Model
     List<SelectedGitResource> SelectedGitResources { get; set; }
     List<SelectedPackage> SelectedPackages { get; set; }
     String SpaceId { get; set; }
+    String VariableSnapshotConcurrencyToken { get; set; }
     String Version { get; set; }
   }
   class ReleaseSummaryResource
@@ -5512,6 +5513,7 @@ Octopus.Client.Model
     List<SelectedGitResource> SelectedGitResources { get; set; }
     List<SelectedPackage> SelectedPackages { get; set; }
     String SpaceId { get; set; }
+    String VariableSnapshotConcurrencyToken { get; set; }
   }
   class RunbookSnapshotTemplateResource
     Octopus.Client.Extensibility.IResource
@@ -9905,7 +9907,9 @@ Octopus.Client.Repositories
     Octopus.Client.Model.LifecycleProgressionResource GetProgression(Octopus.Client.Model.ReleaseResource)
     Octopus.Client.Model.DeploymentTemplateResource GetTemplate(Octopus.Client.Model.ReleaseResource)
     Octopus.Client.Model.ReleaseResource SnapshotVariables(Octopus.Client.Model.ReleaseResource)
+    Octopus.Client.Model.ReleaseResource SnapshotVariables(Octopus.Client.Model.ReleaseResource, String)
     Octopus.Client.Model.ReleaseResource SnapshotVariablesByName(Octopus.Client.Model.ReleaseResource, Octopus.Client.Model.VariableIdentifier[])
+    Octopus.Client.Model.ReleaseResource SnapshotVariablesByName(Octopus.Client.Model.ReleaseResource, Octopus.Client.Model.VariableIdentifier[], String)
   }
   interface IResourceRepository
   {
@@ -9972,7 +9976,9 @@ Octopus.Client.Repositories
     Octopus.Client.Model.ResourceCollection<RunbookRunResource> GetRunbookRuns(Octopus.Client.Model.RunbookSnapshotResource, Int32, Nullable<Int32>)
     Octopus.Client.Model.RunbookRunTemplateResource GetTemplate(Octopus.Client.Model.RunbookSnapshotResource)
     Octopus.Client.Model.RunbookSnapshotResource SnapshotVariables(Octopus.Client.Model.RunbookSnapshotResource)
+    Octopus.Client.Model.RunbookSnapshotResource SnapshotVariables(Octopus.Client.Model.RunbookSnapshotResource, String)
     Octopus.Client.Model.RunbookSnapshotResource SnapshotVariablesByName(Octopus.Client.Model.RunbookSnapshotResource, Octopus.Client.Model.VariableIdentifier[])
+    Octopus.Client.Model.RunbookSnapshotResource SnapshotVariablesByName(Octopus.Client.Model.RunbookSnapshotResource, Octopus.Client.Model.VariableIdentifier[], String)
   }
   interface ISchedulerRepository
   {
@@ -10833,7 +10839,9 @@ Octopus.Client.Repositories.Async
     Task<DeploymentTemplateResource> GetTemplate(Octopus.Client.Model.ReleaseResource, CancellationToken)
     Task<ReleaseResource> SnapshotVariables(Octopus.Client.Model.ReleaseResource)
     Task<ReleaseResource> SnapshotVariables(Octopus.Client.Model.ReleaseResource, CancellationToken)
+    Task<ReleaseResource> SnapshotVariables(Octopus.Client.Model.ReleaseResource, String, CancellationToken)
     Task<ReleaseResource> SnapshotVariablesByName(Octopus.Client.Model.ReleaseResource, Octopus.Client.Model.VariableIdentifier[], CancellationToken)
+    Task<ReleaseResource> SnapshotVariablesByName(Octopus.Client.Model.ReleaseResource, Octopus.Client.Model.VariableIdentifier[], String, CancellationToken)
   }
   interface IResourceRepository
   {
@@ -10900,7 +10908,9 @@ Octopus.Client.Repositories.Async
     Task<ResourceCollection<RunbookRunResource>> GetRunbookRuns(Octopus.Client.Model.RunbookSnapshotResource, Int32, Nullable<Int32>)
     Task<RunbookRunTemplateResource> GetTemplate(Octopus.Client.Model.RunbookSnapshotResource)
     Task<RunbookSnapshotResource> SnapshotVariables(Octopus.Client.Model.RunbookSnapshotResource)
+    Task<RunbookSnapshotResource> SnapshotVariables(Octopus.Client.Model.RunbookSnapshotResource, String, CancellationToken)
     Task<RunbookSnapshotResource> SnapshotVariablesByName(Octopus.Client.Model.RunbookSnapshotResource, Octopus.Client.Model.VariableIdentifier[], CancellationToken)
+    Task<RunbookSnapshotResource> SnapshotVariablesByName(Octopus.Client.Model.RunbookSnapshotResource, Octopus.Client.Model.VariableIdentifier[], String, CancellationToken)
   }
   interface ISchedulerRepository
   {

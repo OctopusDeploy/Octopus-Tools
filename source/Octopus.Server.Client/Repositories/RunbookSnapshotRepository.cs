@@ -25,6 +25,15 @@ namespace Octopus.Client.Repositories
         RunbookRunPreviewResource GetPreview(DeploymentPromotionTarget promotionTarget);
         RunbookSnapshotResource SnapshotVariables(RunbookSnapshotResource runbookSnapshot);
         /// <summary>
+        /// Refreshes the runbook snapshot's variable snapshot to the latest project and library variable values.
+        /// </summary>
+        /// <param name="runbookSnapshot"></param>
+        /// <param name="variableSnapshotConcurrencyToken">
+        /// The VariableSnapshotConcurrencyToken read from the runbook snapshot. When supplied, the update fails with a
+        /// conflict if the snapshot's variable snapshots have changed since. Omit to skip the check.
+        /// </param>
+        RunbookSnapshotResource SnapshotVariables(RunbookSnapshotResource runbookSnapshot, string variableSnapshotConcurrencyToken);
+        /// <summary>
         /// Updates only the named variables within the runbook snapshot's variable snapshot,
         /// leaving all other snapshotted variables untouched.
         /// </summary>
@@ -35,6 +44,20 @@ namespace Octopus.Client.Repositories
         /// <param name="variables"></param>
         /// <returns></returns>
         RunbookSnapshotResource SnapshotVariablesByName(RunbookSnapshotResource runbookSnapshot, VariableIdentifier[] variables);
+        /// <summary>
+        /// Updates only the named variables within the runbook snapshot's variable snapshot,
+        /// leaving all other snapshotted variables untouched.
+        /// </summary>
+        /// <remarks>
+        /// This API is experimental and controlled by toggle `partial-updates-on-variables`
+        /// </remarks>
+        /// <param name="runbookSnapshot"></param>
+        /// <param name="variables"></param>
+        /// <param name="variableSnapshotConcurrencyToken">
+        /// The VariableSnapshotConcurrencyToken read from the runbook snapshot. When supplied, the update fails with a
+        /// conflict if the snapshot's variable snapshots have changed since. Omit to skip the check.
+        /// </param>
+        RunbookSnapshotResource SnapshotVariablesByName(RunbookSnapshotResource runbookSnapshot, VariableIdentifier[] variables, string variableSnapshotConcurrencyToken);
         RunbookSnapshotResource Create(RunbookSnapshotResource runbookSnapshot);
     }
 
@@ -71,12 +94,28 @@ namespace Octopus.Client.Repositories
             return Get(runbookSnapshot.Id);
         }
 
+        public RunbookSnapshotResource SnapshotVariables(RunbookSnapshotResource runbookSnapshot, string variableSnapshotConcurrencyToken)
+        {
+            Client.Post(runbookSnapshot.Link("SnapshotVariables"), new { VariableSnapshotConcurrencyToken = variableSnapshotConcurrencyToken });
+            return Get(runbookSnapshot.Id);
+        }
+
         public RunbookSnapshotResource SnapshotVariablesByName(RunbookSnapshotResource runbookSnapshot, VariableIdentifier[] variables)
         {
             const string route = "~/api/{spaceId}/runbookSnapshots/{runbookSnapshotId}/snapshot-variables-by-name";
             return Client.Post<object, RunbookSnapshotResource>(
                 route,
                 new { Variables = variables },
+                new { spaceId = runbookSnapshot.SpaceId, runbookSnapshotId = runbookSnapshot.Id }
+                );
+        }
+
+        public RunbookSnapshotResource SnapshotVariablesByName(RunbookSnapshotResource runbookSnapshot, VariableIdentifier[] variables, string variableSnapshotConcurrencyToken)
+        {
+            const string route = "~/api/{spaceId}/runbookSnapshots/{runbookSnapshotId}/snapshot-variables-by-name";
+            return Client.Post<object, RunbookSnapshotResource>(
+                route,
+                new { Variables = variables, VariableSnapshotConcurrencyToken = variableSnapshotConcurrencyToken },
                 new { spaceId = runbookSnapshot.SpaceId, runbookSnapshotId = runbookSnapshot.Id }
                 );
         }
