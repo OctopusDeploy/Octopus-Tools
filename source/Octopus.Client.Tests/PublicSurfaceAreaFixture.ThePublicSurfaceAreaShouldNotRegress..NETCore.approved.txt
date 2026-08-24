@@ -3067,6 +3067,7 @@ Octopus.Client.Model
   {
       StartAfterPrevious = 0
       StartWithPrevious = 1
+      Variable = 2
   }
   class DeploymentTemplateBaseResource
     Octopus.Client.Extensibility.IResource
