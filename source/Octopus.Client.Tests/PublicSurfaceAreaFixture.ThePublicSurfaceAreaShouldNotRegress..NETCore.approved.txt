@@ -4618,7 +4618,7 @@ Octopus.Client.Model
     static Octopus.Client.Model.Permission ActionTemplateView
     static Octopus.Client.Model.Permission AdministerSystem
     static Octopus.Client.Model.Permission AiAgentTranscriptView
-    static Octopus.Client.Model.Permission ApprovalPolicyAdminister
+    static Octopus.Client.Model.Permission ApprovalRuleAdminister
     static Octopus.Client.Model.Permission ArtifactCreate
     static Octopus.Client.Model.Permission ArtifactDelete
     static Octopus.Client.Model.Permission ArtifactEdit

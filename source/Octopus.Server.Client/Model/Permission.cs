@@ -287,7 +287,7 @@ namespace Octopus.Client.Model
 
         [Description("Create, edit, and delete feature toggles")] public static readonly Permission FeatureToggleEdit = new("FeatureToggleEdit");
 
-        [Description("Create, edit, delete Approval Policies")] public static readonly Permission ApprovalPolicyAdminister = new("ApprovalPolicyAdminister");
+        [Description("Create, edit, delete Approval Rules")] public static readonly Permission ApprovalRuleAdminister = new("ApprovalRuleAdminister");
 
         [Description("Create, edit, delete SSH Known Hosts")] public static readonly Permission SshKnownHostsAdminister = new("SshKnownHostsAdminister");
 
