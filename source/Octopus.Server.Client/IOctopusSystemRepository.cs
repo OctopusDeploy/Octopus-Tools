@@ -21,6 +21,7 @@ namespace Octopus.Client
         IOctopusServerNodeRepository OctopusServerNodes { get; }
         IPerformanceConfigurationRepository PerformanceConfiguration { get; }
         IPlatformHubPolicyRepository PlatformHubPolicies { get; }
+        IPlatformHubVersionControlSettingsRepository PlatformHubVersionControlSettings { get; }
         IRateLimitingPolicyRepository RateLimitingPolicies { get; }
         IServerStatusRepository ServerStatus { get; }
         ISpaceRepository Spaces { get; }

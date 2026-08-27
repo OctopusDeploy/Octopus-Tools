@@ -88,6 +88,7 @@ namespace Octopus.Client
             OctopusServerNodes = new OctopusServerNodeRepository(this);
             PerformanceConfiguration = new PerformanceConfigurationRepository(this);
             PlatformHubPolicies = new PlatformHubPolicyRepository(client);
+            PlatformHubVersionControlSettings = new PlatformHubVersionControlSettingsRepository(client);
             RateLimitingPolicies = new RateLimitingPolicyRepository(client);
             ProjectGroups = new ProjectGroupRepository(this);
             Projects = new ProjectRepository(this);
@@ -163,6 +164,7 @@ namespace Octopus.Client
         public IOctopusServerNodeRepository OctopusServerNodes { get; }
         public IPerformanceConfigurationRepository PerformanceConfiguration { get; }
         public IPlatformHubPolicyRepository PlatformHubPolicies { get; }
+        public IPlatformHubVersionControlSettingsRepository PlatformHubVersionControlSettings { get; }
         public IRateLimitingPolicyRepository RateLimitingPolicies { get; }
         public IProjectGroupRepository ProjectGroups { get; }
         public IProjectRepository Projects { get; }
