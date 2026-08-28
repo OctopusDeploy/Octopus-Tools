@@ -4839,6 +4839,8 @@ Octopus.Client.Model
     String BasePath { get; set; }
     Octopus.Client.Model.ProjectGitCredentialResource Credentials { get; set; }
     String DefaultBranch { get; set; }
+    List<String> ProtectedBranchNamePatterns { get; set; }
+    Boolean ProtectedDefaultBranch { get; set; }
     String Url { get; set; }
   }
   class PreconditionType

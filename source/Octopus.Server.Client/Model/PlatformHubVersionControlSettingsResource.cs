@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Octopus.Client.Extensibility.Attributes;
 
 namespace Octopus.Client.Model;
@@ -22,4 +23,10 @@ public class PlatformHubVersionControlSettingsResource
 
     [Writeable]
     public string BasePath { get; set; }
+
+    [Writeable]
+    public bool ProtectedDefaultBranch { get; set; }
+
+    [Writeable]
+    public List<string> ProtectedBranchNamePatterns { get; set; } = new();
 }
