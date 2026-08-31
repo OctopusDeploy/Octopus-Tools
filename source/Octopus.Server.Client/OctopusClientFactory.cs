@@ -39,13 +39,19 @@ namespace Octopus.Client
             return OctopusAsyncClient.Create(serverEndpoint, options, requestingTool);
         }
 
-        internal static HttpClient BuildHttpClient(HttpMessageHandler handler, OctopusClientOptions clientOptions, string requestingTool, bool disposeHandler = true)
-            => BuildHttpClient(handler, clientOptions, new OctopusCustomHeaders(requestingTool), disposeHandler);
+        internal static HttpClient BuildHttpClient(HttpMessageHandler handler, OctopusClientOptions clientOptions, string requestingTool, bool disposeHandler = true, RateLimitPacer rateLimitPacer = null)
+            => BuildHttpClient(handler, clientOptions, new OctopusCustomHeaders(requestingTool), disposeHandler, rateLimitPacer);
 
-        internal static HttpClient BuildHttpClient(HttpMessageHandler handler, OctopusClientOptions clientOptions, OctopusCustomHeaders octopusCustomHeaders, bool disposeHandler = true)
+        // rateLimitPacer is the pacer this client schedules its requests against, or null not to pace them at all.
+        // One client can end up with more than one HttpClient (the OIDC token requests get their own), and they are
+        // all spending the same allowance, so they share a pacer rather than each keeping their own idea of what's left.
+        internal static HttpClient BuildHttpClient(HttpMessageHandler handler, OctopusClientOptions clientOptions, OctopusCustomHeaders octopusCustomHeaders, bool disposeHandler = true, RateLimitPacer rateLimitPacer = null)
         {
-            // Retry HTTP 429s from the server's rate limiter before anything else in the chain sees them.
-            var httpClient = new HttpClient(new RateLimitRetryHandler(handler, clientOptions), disposeHandler);
+            // Pacing goes closest to the wire so that retries are paced too, and retrying wraps it so that an
+            // HTTP 429 we didn't manage to avoid is still dealt with before anything else in the chain sees it.
+            var rateLimitHandler = rateLimitPacer == null ? handler : new RateLimitPacingHandler(handler, rateLimitPacer);
+
+            var httpClient = new HttpClient(new RateLimitRetryHandler(rateLimitHandler, clientOptions), disposeHandler);
             httpClient.Timeout = clientOptions.Timeout;
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             httpClient.DefaultRequestHeaders.Add("User-Agent", octopusCustomHeaders.UserAgent);

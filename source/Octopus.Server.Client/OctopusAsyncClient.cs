@@ -46,6 +46,7 @@ namespace Octopus.Client
             this.serverEndpoint = serverEndpoint;
             cookieOriginUri = BuildCookieUri(serverEndpoint);
             requestSemaphore = new SemaphoreSlim(clientOptions.MaxSimultaneousRequests, clientOptions.MaxSimultaneousRequests);
+            var rateLimitPacer = clientOptions.UseRateLimitHeaders ? new RateLimitPacer() : null;
 
             var handler = new HttpClientHandler
             {
@@ -80,12 +81,12 @@ namespace Octopus.Client
             {
                 var openIdConfigUri = serverEndpoint.OctopusServer.Resolve(OidcAccessTokenCache.WellKnownOpenIdConfigurationUrl);
                 // disposeHandler: false — the main HttpClient owns and disposes the handler
-                var oidcHttpClient = OctopusClientFactory.BuildHttpClient(handler, clientOptions, requestingTool, disposeHandler: false);
+                var oidcHttpClient = OctopusClientFactory.BuildHttpClient(handler, clientOptions, requestingTool, disposeHandler: false, rateLimitPacer: rateLimitPacer);
                 oidcCache = new OidcAccessTokenCache(serverEndpoint.OidcCredentials, openIdConfigUri, oidcHttpClient);
                 handlerChain = new OidcAuthenticationHandler(oidcCache, handler);
             }
 
-            client = OctopusClientFactory.BuildHttpClient(handlerChain, clientOptions, requestingTool);
+            client = OctopusClientFactory.BuildHttpClient(handlerChain, clientOptions, requestingTool, rateLimitPacer: rateLimitPacer);
             if (serverEndpoint.OidcCredentials == null)
             {
                 if (serverEndpoint.ApiKey != null)

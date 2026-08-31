@@ -523,6 +523,7 @@ Octopus.Client
     TimeSpan RateLimitRetryMaxDelay { get; set; }
     SslProtocols SslProtocols { get; set; }
     TimeSpan Timeout { get; set; }
+    Boolean UseRateLimitHeaders { get; set; }
   }
   class OctopusRepository
     Octopus.Client.IOctopusRepository

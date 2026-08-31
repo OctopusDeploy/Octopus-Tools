@@ -63,5 +63,13 @@ namespace Octopus.Client
         /// longer than this, we stop retrying and the HTTP 429 surfaces to the caller as an error.
         /// </summary>
         public TimeSpan RateLimitRetryMaxDelay { get; set; } = TimeSpan.FromSeconds(30);
+
+        /// <summary>
+        /// If true, the client paces itself against the advisory Octopus-RateLimit-Policy and Octopus-RateLimit
+        /// headers the server sends, spacing requests out so that it stays inside the limit instead of running at
+        /// it and being rejected with HTTP 429. Off by default, because it makes the client wait on its own
+        /// initiative, which a caller that would rather see the HTTP 429 doesn't want.
+        /// </summary>
+        public bool UseRateLimitHeaders { get; set; } = false;
     }
 }

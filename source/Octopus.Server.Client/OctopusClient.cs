@@ -32,6 +32,7 @@ namespace Octopus.Client
         private readonly SemaphoreSlim requestSemaphore;
         private readonly OidcAccessTokenCache oidcTokenCache;
         private readonly OctopusClientOptions options;
+        private readonly RateLimitPacer rateLimitPacer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OctopusClient" /> class.
@@ -47,6 +48,7 @@ namespace Octopus.Client
             this.serverEndpoint = serverEndpoint;
             options ??= new OctopusClientOptions();
             this.options = options;
+            rateLimitPacer = options.UseRateLimitHeaders ? new RateLimitPacer() : null;
 
             cookieOriginUri = BuildCookieUri(serverEndpoint);
             octopusCustomHeaders = new OctopusCustomHeaders(requestingTool);
@@ -67,7 +69,7 @@ namespace Octopus.Client
                     oidcHandler.Proxy = serverEndpoint.Proxy;
                 }
 
-                var oidcHttpClient = OctopusClientFactory.BuildHttpClient(oidcHandler, options, octopusCustomHeaders);
+                var oidcHttpClient = OctopusClientFactory.BuildHttpClient(oidcHandler, options, octopusCustomHeaders, rateLimitPacer: rateLimitPacer);
                 oidcTokenCache = new OidcAccessTokenCache(serverEndpoint.OidcCredentials, openIdConfigUri, oidcHttpClient);
             }
 
@@ -468,10 +470,13 @@ namespace Octopus.Client
             {
                 try
                 {
+                    WaitForRateLimitPacing();
                     return SendRequest<TResponseResource>(request, readResponse);
                 }
                 catch (WebException wex) when (wex.Response is HttpWebResponse errorResponse)
                 {
+                    ObserveRateLimitHeaders(errorResponse);
+
                     if (attempt < options.RateLimitRetryCount
                         && (int)errorResponse.StatusCode == 429 // HttpStatusCode.TooManyRequests isn't in the netstandard2.0 profile
                         && CanRetryAfterRateLimit(request)
@@ -492,6 +497,26 @@ namespace Octopus.Client
         /// </summary>
         static bool CanRetryAfterRateLimit(OctopusRequest request)
             => !(request.RequestResource is Stream) && !(request.RequestResource is FileUpload);
+
+        /// <summary>
+        /// Waits out whatever the pacer thinks we owe the server, so we stay inside the advertised rate limit
+        /// rather than being rejected by it. Does nothing unless <see cref="OctopusClientOptions.UseRateLimitHeaders" />
+        /// is on.
+        /// </summary>
+        void WaitForRateLimitPacing()
+        {
+            if (rateLimitPacer == null) return;
+
+            var delay = rateLimitPacer.ReserveSlot();
+            if (delay > TimeSpan.Zero) Thread.Sleep(delay);
+        }
+
+        void ObserveRateLimitHeaders(HttpWebResponse response)
+        {
+            rateLimitPacer?.ObserveResponse(
+                response.Headers.Get(RateLimitPacer.PolicyHeaderName),
+                response.Headers.Get(RateLimitPacer.RateLimitHeaderName));
+        }
 
         bool TryGetRateLimitRetryDelay(HttpWebResponse response, out TimeSpan delay)
         {
@@ -615,6 +640,7 @@ namespace Octopus.Client
 
                 webResponse = (HttpWebResponse)webRequest.GetResponse();
                 AfterReceivingHttpResponse?.Invoke(webResponse);
+                ObserveRateLimitHeaders(webResponse);
 
                 var resource = default(TResponseResource);
                 if (readResponse)
