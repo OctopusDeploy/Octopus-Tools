@@ -31,6 +31,7 @@ namespace Octopus.Client
         private string antiforgeryCookieName = null;
         private readonly SemaphoreSlim requestSemaphore;
         private readonly OidcAccessTokenCache oidcTokenCache;
+        private readonly OctopusClientOptions options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OctopusClient" /> class.
@@ -45,6 +46,7 @@ namespace Octopus.Client
         {
             this.serverEndpoint = serverEndpoint;
             options ??= new OctopusClientOptions();
+            this.options = options;
 
             cookieOriginUri = BuildCookieUri(serverEndpoint);
             octopusCustomHeaders = new OctopusCustomHeaders(requestingTool);
@@ -460,6 +462,45 @@ namespace Octopus.Client
 
         protected virtual OctopusResponse<TResponseResource> DispatchRequest<TResponseResource>(OctopusRequest request, bool readResponse)
         {
+            // Unlike the async client, this one talks to the server via HttpWebRequest rather than HttpClient, so it
+            // can't use RateLimitRetryHandler. We retry HTTP 429s here instead, so both clients behave the same way.
+            for (var attempt = 0; ; attempt++)
+            {
+                try
+                {
+                    return SendRequest<TResponseResource>(request, readResponse);
+                }
+                catch (WebException wex) when (wex.Response is HttpWebResponse errorResponse)
+                {
+                    if (attempt < options.RateLimitRetryCount
+                        && (int)errorResponse.StatusCode == 429 // HttpStatusCode.TooManyRequests isn't in the netstandard2.0 profile
+                        && CanRetryAfterRateLimit(request)
+                        && TryGetRateLimitRetryDelay(errorResponse, out var delay))
+                    {
+                        errorResponse.Close();
+                        if (delay > TimeSpan.Zero) Thread.Sleep(delay);
+                        continue;
+                    }
+
+                    throw OctopusExceptionFactory.CreateException(wex, errorResponse);
+                }
+            }
+        }
+
+        /// <summary>
+        /// A request whose body is a stream can't be retried, because we can't rewind the caller's stream.
+        /// </summary>
+        static bool CanRetryAfterRateLimit(OctopusRequest request)
+            => !(request.RequestResource is Stream) && !(request.RequestResource is FileUpload);
+
+        bool TryGetRateLimitRetryDelay(HttpWebResponse response, out TimeSpan delay)
+        {
+            var delta = RateLimitRetry.ParseRetryAfterHeader(response.Headers.Get("Retry-After"));
+            return RateLimitRetry.TryGetDelay(delta, options, out delay);
+        }
+
+        OctopusResponse<TResponseResource> SendRequest<TResponseResource>(OctopusRequest request, bool readResponse)
+        {
             var webRequest = (HttpWebRequest)WebRequest.Create(request.Uri);
             if (serverEndpoint.Proxy != null)
             {
@@ -624,15 +665,6 @@ namespace Octopus.Client
                 ReceivedOctopusResponse?.Invoke(octopusResponse);
 
                 return octopusResponse;
-            }
-            catch (WebException wex)
-            {
-                if (wex.Response != null)
-                {
-                    throw OctopusExceptionFactory.CreateException(wex, (HttpWebResponse)wex.Response);
-                }
-
-                throw;
             }
             finally
             {

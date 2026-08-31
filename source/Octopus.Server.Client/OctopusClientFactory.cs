@@ -44,7 +44,8 @@ namespace Octopus.Client
 
         internal static HttpClient BuildHttpClient(HttpMessageHandler handler, OctopusClientOptions clientOptions, OctopusCustomHeaders octopusCustomHeaders, bool disposeHandler = true)
         {
-            var httpClient = new HttpClient(handler, disposeHandler);
+            // Retry HTTP 429s from the server's rate limiter before anything else in the chain sees them.
+            var httpClient = new HttpClient(new RateLimitRetryHandler(handler, clientOptions), disposeHandler);
             httpClient.Timeout = clientOptions.Timeout;
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             httpClient.DefaultRequestHeaders.Add("User-Agent", octopusCustomHeaders.UserAgent);

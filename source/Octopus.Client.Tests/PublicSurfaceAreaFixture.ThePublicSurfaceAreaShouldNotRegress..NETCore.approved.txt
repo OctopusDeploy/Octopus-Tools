@@ -518,6 +518,9 @@ Octopus.Client
     String Proxy { get; set; }
     String ProxyPassword { get; set; }
     String ProxyUsername { get; set; }
+    Int32 RateLimitRetryCount { get; set; }
+    TimeSpan RateLimitRetryDefaultDelay { get; set; }
+    TimeSpan RateLimitRetryMaxDelay { get; set; }
     SslProtocols SslProtocols { get; set; }
     TimeSpan Timeout { get; set; }
   }

@@ -45,5 +45,23 @@ namespace Octopus.Client
         /// Maximum number of simultaneous requests to make to the server
         /// </summary>
         public int MaxSimultaneousRequests = int.MaxValue;
+
+        /// <summary>
+        /// The maximum number of times a request will be retried after the server rejects it with
+        /// HTTP 429 (Too Many Requests) because it hit a rate limit. Set this to 0 to turn off retrying,
+        /// in which case the HTTP 429 surfaces to the caller as an error.
+        /// </summary>
+        public int RateLimitRetryCount { get; set; } = 3;
+
+        /// <summary>
+        /// How long to wait before retrying an HTTP 429 response that has no Retry-After header.
+        /// </summary>
+        public TimeSpan RateLimitRetryDefaultDelay { get; set; } = TimeSpan.FromSeconds(2);
+
+        /// <summary>
+        /// The longest we are willing to wait between retries. If the server's Retry-After asks us to wait
+        /// longer than this, we stop retrying and the HTTP 429 surfaces to the caller as an error.
+        /// </summary>
+        public TimeSpan RateLimitRetryMaxDelay { get; set; } = TimeSpan.FromSeconds(30);
     }
 }
