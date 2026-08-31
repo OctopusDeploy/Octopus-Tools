@@ -81,19 +81,19 @@ namespace Octopus.Client.Tests.Integration.OctopusClient
             result.Should().Be("Success");
             retryAfterRequests.Should().Be(3);
         }
-        
+
         [Test]
         public async Task AsyncClientDoesNotRetryIfRateLimitRetryCountIsZero()
         {
             var configuredClient = await OctopusAsyncClient.Create(
-                new OctopusServerEndpoint(HostBaseUri + TestRootPath), 
+                new OctopusServerEndpoint(HostBaseUri + TestRootPath),
                 new OctopusClientOptions { RateLimitRetryCount = 0 });
 
             Func<Task> act = () => configuredClient.Get<string>("~/retryafter");
-            
+
             var ex = (await act.Should().ThrowAsync<OctopusException>()).Subject.Single();
             ex.HttpStatusCode.Should().Be(429);
-                
+
             retryAfterRequests.Should().Be(1);
         }
 
@@ -105,10 +105,10 @@ namespace Octopus.Client.Tests.Integration.OctopusClient
                 new OctopusClientOptions { RateLimitRetryCount = 0 });
 
             Action act = () => configuredClient.Get<string>("~/retryafter");
-            
+
             var ex = act.Should().Throw<OctopusException>().Subject.Single();
             ex.HttpStatusCode.Should().Be(429);
-                
+
             retryAfterRequests.Should().Be(1);
         }
 
