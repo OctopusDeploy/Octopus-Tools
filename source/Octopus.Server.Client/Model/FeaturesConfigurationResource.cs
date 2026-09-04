@@ -21,9 +21,6 @@ namespace Octopus.Client.Model
         public string HelpSidebarSupportLinkLabel { get; set; }
 
         [Writeable]
-        public bool IsAutomaticStepUpdatesEnabled { get; set; }
-
-        [Writeable]
         public bool IsKubernetesCloudTargetDiscoveryEnabled { get; set; }
 
         [Writeable]

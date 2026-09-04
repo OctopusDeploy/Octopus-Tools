@@ -3340,7 +3340,6 @@ Octopus.Client.Model
     String DefaultPowerShellEdition { get; set; }
     String HelpSidebarSupportLink { get; set; }
     String HelpSidebarSupportLinkLabel { get; set; }
-    Boolean IsAutomaticStepUpdatesEnabled { get; set; }
     Boolean IsBuiltInWorkerEnabled { get; set; }
     Boolean IsCommunityActionTemplatesEnabled { get; set; }
     Boolean IsCompositeDockerHubRegistryFeedEnabled { get; set; }
